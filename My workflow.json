@@ -1,0 +1,403 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -192
+      ],
+      "id": "aa484161-8563-458a-a1aa-517bf8af40ad",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OUMzT402YqlKCHPA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an email assistant.\n\nAnalyze the email below and return ONLY valid JSON.\n\nEmail:\nSubject: {{ $json.Subject }}\nBody: {{ $json.snippet }}\n\nExtract:\n- intent (what is this about)\n- summary (max 2 lines)\n- task (action required, or \"none\")\n- priority (high / medium / low)\n- category (job / meeting / task / spam / personal)\n\nReturn strictly in JSON:\n{\n  \"intent\": \"\",\n  \"summary\": \"\",\n  \"task\": \"\",\n  \"priority\": \"\",\n  \"category\": \"\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        -192
+      ],
+      "id": "a043b3c8-3c84-4821-a1f6-3d2d26ba0028",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AA4XGwrs9T0Rfm6A",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ {\n  sender: $node[\"Gmail Trigger\"].json.From,\n  subject: $node[\"Gmail Trigger\"].json.Subject,\n  parsed: JSON.parse($json.output[0].content[0].text.replace(/```json|```/g, '').trim())\n} }}",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        32
+      ],
+      "id": "f79cab33-5a88-4428-b183-39b4eeb48216",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pM95vjXDLxBV19L6Z7ZYUO-6PpMWDD743W6Q03FsCQw",
+          "mode": "list",
+          "cachedResultName": "Email n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pM95vjXDLxBV19L6Z7ZYUO-6PpMWDD743W6Q03FsCQw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pM95vjXDLxBV19L6Z7ZYUO-6PpMWDD743W6Q03FsCQw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ new Date() }}",
+            "Sender": "={{ $node[\"Gmail Trigger\"].json.From }}",
+            "Subject": "={{ $node[\"Gmail Trigger\"].json.Subject }}",
+            "Intent": "={{ $json.parsed.intent }}",
+            "Summary": "={{ $json.parsed.summary }}",
+            "Task": "={{ $json.parsed.task }}",
+            "Priority": "={{ $json.parsed.priority }}",
+            "Category": "={{ $json.parsed.category }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Task",
+              "displayName": "Task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        -160
+      ],
+      "id": "a15cfea6-31f4-465a-ae06-777e05752aa1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6rnD0lMMsDtCgfwE",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5244192330",
+        "text": "=🚨 HIGH PRIORITY EMAIL  From: {{ $json.Sender }} Subject: {{ $json.Subject }}  Intent: {{ $json.Intent }} Task: {{ $json.Task }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        -16
+      ],
+      "id": "6be5bffe-f258-4d03-92a3-ac86e4e4787d",
+      "name": "Send a text message",
+      "webhookId": "41c4fbe6-86be-461c-b66c-ac8ec5d90a29",
+      "credentials": {
+        "telegramApi": {
+          "id": "gCaixQMwzOvL8M1V",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2cef594d-e9ec-4dfb-af9e-aa0e95645a90",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "=unsubscribe",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "dc3be33e-cd64-4c7f-974a-3512d2e18d6d",
+              "leftValue": "={{ $json.From }}",
+              "rightValue": "no-reply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f7e3ac0b-4e40-495b-b4c6-93cbe7d7e625",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "sale",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2e8fd794-21b3-48b5-a964-3bc7b2d8f260",
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "no-reply",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        96
+      ],
+      "id": "a7d6549e-cab9-4a0c-a500-8f113810646b",
+      "name": "Filter Spam"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5be4ac35-e8d3-4932-86b7-aacc7de364cb",
+              "leftValue": "={{ $json.Priority }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        144
+      ],
+      "id": "8f30e4c5-2894-4818-b584-e84c18ec5494",
+      "name": "Priority Check"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Priority Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Spam": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priority Check": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "65f53c79-9bee-48ab-aca6-92d557339772",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "15befc0be39ca0b9a8e582f5a72f47644e3867671dee1875319c975b79f85da6"
+  },
+  "id": "SKqvPpvsdQl2yuX7",
+  "tags": []
+}
